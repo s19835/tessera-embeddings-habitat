@@ -19,6 +19,8 @@
   a:hover { color: #D55E00; }
   ::selection { background: #E4DDCB; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .plot-wrap { height: 660px; }
+  @media (max-width: 640px) { .plot-wrap { height: 420px; } }
 </style>
 </helmet>
 <div style="min-height: 100vh; background: var(--paper); color: #17140F; font-family: Newsreader, Georgia, serif; padding: 0 32px 72px; box-sizing: border-box">
@@ -65,7 +67,7 @@
         </div>
       </div>
 
-      <div ref="{{ wrapRef }}" onMouseMove="{{ onMove }}" onMouseLeave="{{ onLeave }}" onMouseDown="{{ onDown }}" onMouseUp="{{ onUp }}" style="position: relative; height: 660px; border: 1px solid #17140F; background: var(--panel); cursor: crosshair; overflow: hidden">
+      <div ref="{{ wrapRef }}" onMouseMove="{{ onMove }}" onMouseLeave="{{ onLeave }}" onMouseDown="{{ onDown }}" onMouseUp="{{ onUp }}" class="plot-wrap" style="position: relative; border: 1px solid #17140F; background: var(--panel); cursor: crosshair; overflow: hidden">
         <canvas ref="{{ canvasRef }}" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block"></canvas>
         <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
           <div style="position: absolute; inset: 0; display: grid; place-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A8171">Reading site table…</div>
@@ -136,7 +138,7 @@
         <p style="margin: 14px 0 0; font-size: 15px; line-height: 1.45; color: #5A5346">A ratio of about 1 means the gap between the groups is no bigger than the ordinary scatter inside them — the centroids sit inside each other’s cloud. Read plainly: in two dimensions these are not separate clusters. Whatever the classifier is using survives in the dimensions this view cannot draw.</p>
       </div>
 
-      <div style="border: 1px solid #C6BEA9; background: var(--panel); min-height: 296px; display: flex; flex-direction: column; flex: 1 1 300px">
+      <div ref="{{ detailRef }}" style="border: 1px solid #C6BEA9; background: var(--panel); min-height: 296px; display: flex; flex-direction: column; flex: 1 1 300px">
         <p style="margin: 0; padding: 16px 20px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A8171; border-bottom: 1px solid #E4DDCB">{{ detailHeading }}</p>
         <sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ true }}">
           <div style="padding: 16px 20px 20px; display: grid; grid-template-columns: 1fr auto; gap: 16px 18px; align-items: start">
@@ -223,6 +225,7 @@ class Component extends DCLogic {
   canvasRef = React.createRef();
   wrapRef = React.createRef();
   mapRef = React.createRef();
+  detailRef = React.createRef();
   drag = null;
 
   componentDidMount() {
@@ -362,7 +365,9 @@ class Component extends DCLogic {
     const ctx = this.base.getContext('2d');
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.clearRect(0, 0, this.W, this.H);
-    const d = this.d, r = this.props.pointRadius ?? 2.4, a = this.props.pointOpacity ?? 0.72;
+    const d = this.d, a = this.props.pointOpacity ?? 0.72;
+    // narrower canvas -> same point count packed into less pixel area, so shrink markers to compensate
+    const r = (this.props.pointRadius ?? 2.4) * (this.W < 480 ? 0.55 : this.W < 700 ? 0.75 : 1);
     const dim = !!this.state.sel;
     for (let pass = 0; pass < 2; pass++) {
       for (let i = 0; i < d.n; i++) {
@@ -542,7 +547,10 @@ class Component extends DCLogic {
     if (!g.active) {
       const p = this.at(e);
       const i = this.pick(p.x, p.y);
-      this.setState(s => ({ pin: s.pin === i ? -1 : i, hover: i }));
+      this.setState(s => ({ pin: s.pin === i ? -1 : i, hover: i }), () => {
+        // on a stacked mobile layout the detail card sits below the fold — pinning a point should bring it on screen
+        if (this.state.pin >= 0 && this.detailRef.current) this.detailRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
       return;
     }
     const sel = { x0: Math.min(g.x0, g.x1), x1: Math.max(g.x0, g.x1), y0: Math.min(g.y0, g.y1), y1: Math.max(g.y0, g.y1) };
@@ -582,7 +590,7 @@ class Component extends DCLogic {
       spreadU: st ? st.sp[0].toFixed(2) : '—',
       spreadW: st ? st.sp[1].toFixed(2) : '—',
       spreadAvg: st ? st.spAvg.toFixed(2) : '—',
-      canvasRef: this.canvasRef, wrapRef: this.wrapRef, mapRef: this.mapRef,
+      canvasRef: this.canvasRef, wrapRef: this.wrapRef, mapRef: this.mapRef, detailRef: this.detailRef,
       onMove: this.onMove, onLeave: this.onLeave, onDown: this.onDown, onUp: this.onUp,
       modeSurvey: () => this.setState({ mode: 'survey' }),
       modeCountry: () => this.setState({ mode: 'country' }),
