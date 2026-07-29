@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --paper: #FFFFFF; --panel: #FAFAF8; }
+  html, body { margin: 0; padding: 0; background: var(--paper); }
+  body { -webkit-font-smoothing: antialiased; }
+  a { color: #0B5D8A; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { color: #D55E00; }
+  ::selection { background: #E4DDCB; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+</style>
+</helmet>
+<div style="min-height: 100vh; background: var(--paper); color: #17140F; font-family: Newsreader, Georgia, serif; padding: 0 32px 72px; box-sizing: border-box">
+
+  <header style="max-width: 1420px; margin: 0 auto; padding: 56px 0 32px; border-bottom: 1px solid #17140F; display: flex; flex-wrap: wrap; gap: 40px 56px; align-items: flex-end; animation: fadeUp 0.6s ease both">
+    <div style="display: flex; flex-direction: column; gap: 22px; flex: 1 1 520px; min-width: 0">
+      <div style="display: flex; align-items: center; gap: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #6B6353">
+        <span>TESSERA × UKBMS</span>
+        <span style="width: 28px; height: 1px; background: #C6BEA9"></span>
+        <span>Field note 04 — Habitat embeddings</span>
+      </div>
+      <h1 style="margin: 0; font-size: clamp(40px, 4.4vw, 62px); line-height: 1.03; font-weight: 400; letter-spacing: -0.02em; max-width: 20ch; text-wrap: pretty">Does a satellite embedding know good butterfly habitat when it sees it?</h1>
+      <p style="margin: 0; font-size: 21px; line-height: 1.5; max-width: 62ch; color: #3C362C; text-wrap: pretty">Testing a general-purpose land-embedding model against fifty years of UK butterfly monitoring data — and the two ways this result could have been fake.</p>
+      <p style="margin: 0; padding: 16px 20px; border-left: 3px solid #17140F; background: var(--panel); font-size: 18px; line-height: 1.5; max-width: 62ch; color: #17140F; text-wrap: pretty"><b style="font-weight: 600">The finding in one sentence.</b> Shown only a satellite fingerprint of a patch of land, a classifier can tell a site butterfly surveyors <i>chose</i> from a square picked <i>at random</i> 76% of the time. Guessing blindly would get 69%. The gap is small, repeatable, and not explained by geography.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.6; color: #4A4436; padding-bottom: 6px; flex: 1 1 300px; max-width: 340px">
+      <p style="margin: 0; text-transform: uppercase; letter-spacing: 0.14em; font-size: 10px; color: #8A8171">What you are looking at</p>
+      <p style="margin: 0">Every monitored site in the scheme, placed by the similarity of its satellite habitat signature — not by where it is. Neighbours here look alike from orbit; they may be 600 km apart.</p>
+      <p style="margin: 0; color: #8A8171">Axes are a UMAP projection. They carry no units and no direction.</p>
+    </div>
+  </header>
+
+  <main style="max-width: 1420px; margin: 0 auto; padding-top: 28px; display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start">
+
+    <section style="display: flex; flex-direction: column; gap: 14px; flex: 1 1 540px; min-width: 0">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap">
+        <div style="display: flex; gap: 30px; flex-wrap: wrap">
+          <div style="display: flex; gap: 11px; align-items: flex-start; max-width: 30ch">
+            <span style="width: 11px; height: 11px; border-radius: 50%; background: #0072B2; margin-top: 6px; flex: none"></span>
+            <span style="font-size: 15px; line-height: 1.4"><b style="font-weight: 600">Chosen by surveyors</b> <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8A8171">{{ nUkbms }} · UKBMS</span><br><span style="color: #5A5346; font-size: 14px">Transects volunteers walk because they are known good habitat.</span></span>
+          </div>
+          <div style="display: flex; gap: 11px; align-items: flex-start; max-width: 30ch">
+            <span style="width: 11px; height: 11px; border-radius: 50%; background: #D55E00; margin-top: 6px; flex: none"></span>
+            <span style="font-size: 15px; line-height: 1.4"><b style="font-weight: 600">Picked at random</b> <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8A8171">{{ nWcbs }} · WCBS</span><br><span style="color: #5A5346; font-size: 14px">1 km squares drawn at random, with no habitat preference.</span></span>
+          </div>
+          <div style="display: flex; gap: 11px; align-items: flex-start; max-width: 26ch">
+            <span style="width: 15px; height: 15px; border: 1.5px solid #17140F; border-radius: 50%; margin-top: 4px; flex: none; position: relative"><span style="position: absolute; inset: 5px; background: #17140F; border-radius: 50%"></span></span>
+            <span style="font-size: 15px; line-height: 1.4"><b style="font-weight: 600">Group centroid</b><br><span style="color: #5A5346; font-size: 14px">Mean position, with the dashed ring showing that group's own spread.</span></span>
+          </div>
+        </div>
+        <div style="display: flex; border: 1px solid #17140F; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; flex: none">
+          <button onClick="{{ modeSurvey }}" style="{{ btnSurvey }}">Survey type</button>
+          <button onClick="{{ modeCountry }}" style="{{ btnCountry }}">Country</button>
+        </div>
+      </div>
+
+      <div ref="{{ wrapRef }}" onMouseMove="{{ onMove }}" onMouseLeave="{{ onLeave }}" onMouseDown="{{ onDown }}" onMouseUp="{{ onUp }}" style="position: relative; height: 660px; border: 1px solid #17140F; background: var(--panel); cursor: crosshair; overflow: hidden">
+        <canvas ref="{{ canvasRef }}" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block"></canvas>
+        <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+          <div style="position: absolute; inset: 0; display: grid; place-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A8171">Reading site table…</div>
+        </sc-if>
+        <div style="position: absolute; left: 14px; bottom: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #A79E8B; pointer-events: none">Drag to select a region · click a point to pin it</div>
+        <sc-if value="{{ showCountryKey }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; right: 14px; top: 14px; display: flex; flex-direction: column; gap: 7px; background: rgba(251,249,243,0.92); border: 1px solid #DCD4C1; padding: 10px 12px; pointer-events: none">
+            <sc-for list="{{ countryKey }}" as="c" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em; color: #4A4436">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ c.color }}"></span>
+                <span>{{ c.label }}</span>
+                <span style="color: #A79E8B">{{ c.n }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #5A5346; max-width: 92ch; text-wrap: pretty">The two clouds sit almost on top of one another. That is the honest picture of this projection: squeezing 128 dimensions into two throws away most of what separates the groups, and what remains is not something the eye can adjudicate. The centroid markers make the ambiguity measurable rather than impressionistic.</p>
+    </section>
+
+    <aside style="display: flex; flex-wrap: wrap; gap: 18px; flex: 1 1 330px; max-width: 100%; align-items: flex-start; align-content: flex-start">
+
+      <div style="border: 1px solid #17140F; background: #17140F; color: var(--paper); padding: 22px 22px 20px; flex: 1 1 300px">
+        <p style="margin: 0 0 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #A79E8B">The verdict, in full 128-d space</p>
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 52px; font-weight: 500; letter-spacing: -0.03em; line-height: 1">76.1<span style="font-size: 26px">%</span></span>
+        </div>
+        <p style="margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: #E4DDCB">A classifier given only the embedding — no coordinates — tells chosen habitat from random squares this often.</p>
+
+        <div style="margin: 20px 0 0">
+          <div style="position: relative; height: 26px">
+            <div style="position: absolute; left: 0; right: 0; top: 11px; height: 4px; background: #3C362C"></div>
+            <div style="position: absolute; left: 0; width: 38%; top: 11px; height: 4px; background: #6B6458"></div>
+            <div style="position: absolute; left: 38%; width: 14.2%; top: 11px; height: 4px; background: #56B4E9"></div>
+            <div style="position: absolute; left: 38%; top: 4px; width: 2px; height: 18px; background: #A79E8B"></div>
+            <div style="position: absolute; left: 52.2%; top: 0; width: 2px; height: 26px; background: #FFFFFF"></div>
+          </div>
+          <div style="position: relative; height: 34px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em; line-height: 1.3">
+            <span style="position: absolute; left: 0; top: 0; color: #8A8171">50%<br>coin flip</span>
+            <span style="position: absolute; left: 38%; top: 0; transform: translateX(-50%); color: #A79E8B; text-align: center; white-space: nowrap">69.0%<br>blind guess</span>
+            <span style="position: absolute; left: 52.2%; top: 0; color: #FFFFFF; white-space: nowrap">76.1%<br>the model</span>
+            <span style="position: absolute; right: 0; top: 0; color: #8A8171; text-align: right">100%<br>perfect</span>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: #3C362C; margin: 16px 0 14px"></div>
+        <div style="display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.4">
+          <span style="color: var(--paper)">69.0%</span><span style="color: #A79E8B">majority-class baseline (classes are imbalanced)</span>
+          <span style="color: var(--paper)">+7.1 pts</span><span style="color: #A79E8B">lift — the number that actually matters</span>
+          <span style="color: var(--paper)">p = 0.0099</span><span style="color: #A79E8B">permutation test, so not chance</span>
+          <span style="color: var(--paper)">69.0%</span><span style="color: #A79E8B">a lat/lon-only classifier: exactly baseline, so not geography</span>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #C6BEA9; padding: 20px 20px 18px; background: var(--panel); flex: 1 1 300px">
+        <p style="margin: 0 0 14px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A8171">Same evidence, in this 2-d picture</p>
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 38px; font-weight: 500; letter-spacing: -0.02em; line-height: 1">{{ ratio }}</span>
+          <span style="font-size: 14px; color: #5A5346; line-height: 1.35">centroid distance ÷<br>mean within-group spread</span>
+        </div>
+        <div style="display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.4; margin-top: 14px; color: #4A4436">
+          <span>{{ centDist }}</span><span style="color: #8A8171">between the two centroids</span>
+          <span>{{ spreadU }}</span><span style="color: #8A8171">mean spread, UKBMS</span>
+          <span>{{ spreadW }}</span><span style="color: #8A8171">mean spread, WCBS</span>
+          <span>{{ spreadAvg }}</span><span style="color: #8A8171">average within-group spread</span>
+        </div>
+        <p style="margin: 14px 0 0; font-size: 15px; line-height: 1.45; color: #5A5346">A ratio of about 1 means the gap between the groups is no bigger than the ordinary scatter inside them — the centroids sit inside each other’s cloud. Read plainly: in two dimensions these are not separate clusters. Whatever the classifier is using survives in the dimensions this view cannot draw.</p>
+      </div>
+
+      <div style="border: 1px solid #C6BEA9; background: var(--panel); min-height: 296px; display: flex; flex-direction: column; flex: 1 1 300px">
+        <p style="margin: 0; padding: 16px 20px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A8171; border-bottom: 1px solid #E4DDCB">{{ detailHeading }}</p>
+        <sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 16px 20px 20px; display: grid; grid-template-columns: 1fr auto; gap: 16px 18px; align-items: start">
+            <div style="display: flex; flex-direction: column; gap: 13px; min-width: 0">
+              <div>
+                <p style="margin: 0; font-size: 22px; line-height: 1.2; font-weight: 500; text-wrap: pretty">{{ d.name }}</p>
+                <p style="margin: 5px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8A8171">{{ d.grid }}</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                <span style="width: 9px; height: 9px; border-radius: 50%; background: {{ d.color }}; flex: none"></span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em">{{ d.type }}</span>
+                <span style="font-size: 14px; color: #5A5346">· {{ d.country }}</span>
+              </div>
+              <div style="display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.4; color: #4A4436">
+                <span>{{ d.span }}</span><span style="color: #8A8171">years surveyed</span>
+                <span>{{ d.nyrs }}</span><span style="color: #8A8171">seasons of counts</span>
+                <span>{{ d.coord }}</span><span style="color: #8A8171">real-world position</span>
+              </div>
+            </div>
+            <canvas ref="{{ mapRef }}" width="132" height="176" style="width: 99px; height: 132px; flex: none"></canvas>
+            <p style="margin: 0; grid-column: 1 / -1; border-top: 1px solid #E4DDCB; padding-top: 13px; font-size: 14px; line-height: 1.45; color: #5A5346">Where it sits in the country. Faint marks are the other {{ nOther }} monitored sites — the scheme's own coverage, drawing the coastline for us.</p>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noDetail }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 18px 20px; font-size: 15px; line-height: 1.5; color: #8A8171">Hover a point for a preview; click to keep it. Sites without a name are listed by grid reference.</div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+        <div style="border: 1px solid #17140F; background: var(--panel); padding: 18px 20px; flex: 1 1 300px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+            <p style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A8171">Selected region</p>
+            <button onClick="{{ clearSel }}" style="border: none; background: none; padding: 0; cursor: pointer; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #0072B2">Clear</button>
+          </div>
+          <p style="margin: 12px 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 500; letter-spacing: -0.02em">{{ selPct }}<span style="font-size: 15px; color: #8A8171"> UKBMS</span></p>
+          <div style="display: flex; height: 8px; margin: 12px 0; border: 1px solid #E4DDCB">
+            <div style="background: #0072B2; width: {{ selBar }}"></div>
+            <div style="background: #D55E00; flex: 1"></div>
+          </div>
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.4; color: #4A4436">
+            <span style="white-space: nowrap">{{ selTotal }}</span><span style="color: #8A8171">sites in selection</span>
+            <span style="white-space: nowrap">{{ selU }} / {{ selW }}</span><span style="color: #8A8171">UKBMS / WCBS</span>
+            <span style="white-space: nowrap">{{ selDelta }}</span><span style="color: #8A8171">vs. {{ pctAll }} across the whole plot</span>
+          </div>
+        </div>
+      </sc-if>
+
+    </aside>
+  </main>
+
+  <section style="max-width: 1420px; margin: 44px auto 0; padding-top: 26px; border-top: 1px solid #17140F; display: flex; flex-wrap: wrap; gap: 28px 32px; align-items: flex-start">
+    <div style="flex: 1 1 160px">
+      <p style="margin: 0; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A8171">Read it carefully</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 15px; line-height: 1.55; color: #3C362C; flex: 1 1 250px">
+      <p style="margin: 0"><b style="font-weight: 600">76% is real but modest.</b> It is a long way from a clean split. Nothing here should be read as certainty the number does not carry.</p>
+      <p style="margin: 0"><b style="font-weight: 600">The baseline is 69%, not 50%.</b> There are {{ nUkbms }} UKBMS sites against {{ nWcbs }} WCBS, so always guessing "UKBMS" already scores 69%. The lift is the finding.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 15px; line-height: 1.55; color: #3C362C; flex: 1 1 250px">
+      <p style="margin: 0"><b style="font-weight: 600">Geography was ruled out.</b> A classifier handed only latitude and longitude lands exactly on baseline, so the embedding is not quietly encoding "this is southern England".</p>
+      <p style="margin: 0"><b style="font-weight: 600">Correlation, not mechanism.</b> This tracks where volunteers chose to walk. It is not evidence that the model understands butterflies.</p>
+      <p style="margin: 0"><b style="font-weight: 600">Why it matters anyway.</b> Habitat quality is normally established by someone walking the ground. A signal this cheap — free imagery, no fieldwork — could narrow down where to look first, at national scale, before anyone sets out.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 15px; line-height: 1.55; color: #5A5346; flex: 1 1 250px">
+      <p style="margin: 0">TESSERA compresses a year of Sentinel-1 and Sentinel-2 imagery into 128 numbers per 10 m pixel. It was trained on no ecological data at all. The question is only whether that representation happens to carry habitat information — and the UKBMS site network, with its {{ n }} sites and half a century of counts, is an unusually good way to ask.</p>
+    </div>
+  </section>
+
+  <section style="max-width: 1420px; margin: 30px auto 0; padding-top: 16px; border-top: 1px solid #E4DDCB; display: flex; flex-wrap: wrap; gap: 8px 32px; align-items: baseline; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.5; color: #A79E8B">
+    <p style="margin: 0; flex: 1 1 480px; max-width: 92ch">Botham, M.S.; Middlebrook, I.; Heywood, J.; Harrower, C.; Conway, R.; Roy, D.B. (2023). <i>United Kingdom Butterfly Monitoring Scheme: site location data 2022.</i> NERC EDS Environmental Information Data Centre. <a href="https://doi.org/10.5285/226979d4-6d81-4f5b-9bb7-4a430caa7f51" style="color: #0B5D8A">doi:10.5285/226979d4-6d81-4f5b-9bb7-4a430caa7f51</a> · Open Government Licence.</p>
+    <p style="margin: 0; flex: 0 1 auto">Embeddings: TESSERA · Projection: UMAP, 2 components</p>
+  </section>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;paperTone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;white&quot;,&quot;warm paper&quot;],&quot;default&quot;:&quot;warm paper&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;pointRadius&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:2.4,&quot;min&quot;:1,&quot;max&quot;:5,&quot;step&quot;:0.2,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Plot&quot;},&quot;pointOpacity&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.72,&quot;min&quot;:0.2,&quot;max&quot;:1,&quot;step&quot;:0.02,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Plot&quot;},&quot;defaultColorMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;survey&quot;,&quot;country&quot;],&quot;default&quot;:&quot;survey&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Plot&quot;},&quot;showSpread&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Evidence&quot;},&quot;showCentroidLine&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Evidence&quot;}}">
+const CO = { UKBMS: '#0072B2', WCBS: '#D55E00' };
+const panelColor = () => getComputedStyle(document.documentElement).getPropertyValue('--panel').trim() || '#FBF9F3';
+// hues pulled apart and given differing lightness so dense overlap stays legible; Okabe-Ito derived
+const COUNTRY_COLORS = { England: '#4C6EA5', Scotland: '#E69F00', Wales: '#009E73', 'N. Ireland': '#CC79A7', Other: '#6B6458' };
+
+class Component extends DCLogic {
+  state = { loading: true, mode: 'survey', hover: -1, pin: -1, sel: null, stats: null };
+  canvasRef = React.createRef();
+  wrapRef = React.createRef();
+  mapRef = React.createRef();
+  drag = null;
+
+  componentDidMount() {
+    this.applyTone();
+    this.setState({ mode: this.props.defaultColorMode === 'country' ? 'country' : 'survey' });
+    this.load();
+    this.ro = new ResizeObserver(() => this.layout());
+    if (this.wrapRef.current) this.ro.observe(this.wrapRef.current);
+    window.addEventListener('mouseup', this.winUp);
+  }
+  componentWillUnmount() {
+    if (this.ro) this.ro.disconnect();
+    window.removeEventListener('mouseup', this.winUp);
+  }
+  componentDidUpdate() {
+    const s = this.state, p = this.props;
+    if (this._tone !== p.paperTone) { this._tone = p.paperTone; this.applyTone(); }
+    const baseSig = [s.mode, s.sel ? s.sel.x0 + ',' + s.sel.y0 + ',' + s.sel.x1 + ',' + s.sel.y1 : '-', p.pointRadius, p.pointOpacity].join('|');
+    const overSig = [s.hover, s.pin, p.showSpread, p.showCentroidLine].join('|');
+    if (baseSig !== this.baseSig) {
+      this.baseSig = baseSig; this.overSig = overSig;
+      this.drawBase(); this.paint();
+    } else if (overSig !== this.overSig) {
+      this.overSig = overSig;
+      this.paint();
+    }
+    this.drawMap();
+  }
+
+  _tone = undefined;
+
+  applyTone() {
+    const white = (this.props.paperTone ?? 'white') !== 'warm paper';
+    const r = document.documentElement.style;
+    r.setProperty('--paper', white ? '#FFFFFF' : '#F4F1E9');
+    r.setProperty('--panel', white ? '#FAFAF8' : '#FBF9F3');
+    if (!this.state.loading) this.paint();
+  }
+
+  async load() {
+    try {
+      const txt = await (await fetch('site-embeddings.csv')).text();
+      const nl = txt.indexOf('\n');
+      const head = txt.slice(0, nl).split('|');
+      const I = {};
+      ['name','grid','country','nyrs','first','last','type','lat','lon','x','y'].forEach(k => { I[k] = head.indexOf(k); });
+      const name = [], grid = [], country = [], nyrs = [], first = [], last = [], type = [], lat = [], lon = [], X = [], Y = [];
+      let pos = nl + 1;
+      while (pos < txt.length) {
+        let end = txt.indexOf('\n', pos);
+        if (end < 0) end = txt.length;
+        const line = txt.slice(pos, end);
+        pos = end + 1;
+        if (line.length < 10) continue;
+        const f = line.split('|');
+        const x = +f[I.x], y = +f[I.y];
+        if (!isFinite(x) || !isFinite(y)) continue;
+        let c = (f[I.country] || '').trim();
+        c = c[0] === 'N' ? 'N. Ireland' : (COUNTRY_COLORS[c] ? c : 'Other');
+        name.push((f[I.name] || '').trim());
+        grid.push((f[I.grid] || '').trim());
+        country.push(c);
+        nyrs.push(+f[I.nyrs] || 0);
+        first.push(+f[I.first] || 0);
+        last.push(+f[I.last] || 0);
+        type.push((f[I.type] || '').trim() === 'WCBS' ? 1 : 0);
+        lat.push(+f[I.lat]); lon.push(+f[I.lon]);
+        X.push(x); Y.push(y);
+      }
+      const n = X.length;
+      const cx = [0, 0], cy = [0, 0], cn = [0, 0];
+      for (let i = 0; i < n; i++) { const t = type[i]; cx[t] += X[i]; cy[t] += Y[i]; cn[t]++; }
+      for (let t = 0; t < 2; t++) { cx[t] /= cn[t]; cy[t] /= cn[t]; }
+      // within-group spread = mean of the per-axis standard deviations
+      const vx = [0, 0], vy = [0, 0], sp = [0, 0];
+      for (let i = 0; i < n; i++) {
+        const t = type[i];
+        vx[t] += (X[i] - cx[t]) * (X[i] - cx[t]);
+        vy[t] += (Y[i] - cy[t]) * (Y[i] - cy[t]);
+      }
+      for (let t = 0; t < 2; t++) sp[t] = (Math.sqrt(vx[t] / cn[t]) + Math.sqrt(vy[t] / cn[t])) / 2;
+      const spAvg = (sp[0] + sp[1]) / 2;
+      const dist = Math.hypot(cx[0] - cx[1], cy[0] - cy[1]);
+      const byCountry = {};
+      for (let i = 0; i < n; i++) byCountry[country[i]] = (byCountry[country[i]] || 0) + 1;
+      const wf = name.indexOf('Woodwalton Farm');
+      this.defaultIdx = wf >= 0 ? wf : name.findIndex((nm, k) => nm && type[k] === 0 && nyrs[k] > 30);
+      if (this.defaultIdx < 0) this.defaultIdx = 0;
+      this.d = { n, name, grid, country, nyrs, first, last, type, lat, lon, X, Y,
+        sx: new Float32Array(n), sy: new Float32Array(n),
+        minx: Math.min.apply(null, X), maxx: Math.max.apply(null, X),
+        miny: Math.min.apply(null, Y), maxy: Math.max.apply(null, Y),
+        minlat: Math.min.apply(null, lat), maxlat: Math.max.apply(null, lat),
+        minlon: Math.min.apply(null, lon), maxlon: Math.max.apply(null, lon) };
+      this.setState({ loading: false, stats: { n, cn, cx, cy, sp, spAvg, dist, ratio: dist / spAvg, byCountry } }, () => this.layout());
+    } catch (e) {
+      this.setState({ loading: false });
+      console.error('site table load failed', e);
+    }
+  }
+
+  layout() {
+    const wrap = this.wrapRef.current, cv = this.canvasRef.current;
+    if (!wrap || !cv || !this.d) return;
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    if (!w || !h) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    this.W = w; this.H = h; this.dpr = dpr;
+    const d = this.d, pad = 34;
+    const k = Math.min((w - pad * 2) / (d.maxx - d.minx), (h - pad * 2) / (d.maxy - d.miny));
+    const ox = (w - (d.maxx - d.minx) * k) / 2, oy = (h - (d.maxy - d.miny) * k) / 2;
+    this.k = k;
+    this.toX = x => ox + (x - d.minx) * k;
+    this.toY = y => h - oy - (y - d.miny) * k;
+    for (let i = 0; i < d.n; i++) { d.sx[i] = this.toX(d.X[i]); d.sy[i] = this.toY(d.Y[i]); }
+    this.base = document.createElement('canvas');
+    this.base.width = cv.width; this.base.height = cv.height;
+    this.drawBase(); this.paint();
+  }
+
+  colorOf(i) {
+    const d = this.d;
+    return this.state.mode === 'country' ? (COUNTRY_COLORS[d.country[i]] || COUNTRY_COLORS.Other) : (d.type[i] ? CO.WCBS : CO.UKBMS);
+  }
+
+  inSel(i) {
+    const s = this.state.sel;
+    if (!s) return true;
+    const d = this.d;
+    return d.sx[i] >= s.x0 && d.sx[i] <= s.x1 && d.sy[i] >= s.y0 && d.sy[i] <= s.y1;
+  }
+
+  drawBase() {
+    if (!this.base || !this.d) return;
+    const ctx = this.base.getContext('2d');
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.clearRect(0, 0, this.W, this.H);
+    const d = this.d, r = this.props.pointRadius ?? 2.4, a = this.props.pointOpacity ?? 0.72;
+    const dim = !!this.state.sel;
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 0; i < d.n; i++) {
+        const on = this.inSel(i);
+        if (dim && (pass === 0) !== !on) continue;
+        if (!dim && pass === 1) break;
+        ctx.globalAlpha = dim ? (on ? Math.min(1, a + 0.2) : 0.13) : a;
+        ctx.fillStyle = this.colorOf(i);
+        ctx.beginPath();
+        ctx.arc(d.sx[i], d.sy[i], r, 0, 6.2832);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  paint() {
+    const cv = this.canvasRef.current;
+    if (!cv || !this.d || !this.base) return;
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.fillStyle = panelColor();
+    ctx.fillRect(0, 0, this.W, this.H);
+    ctx.strokeStyle = '#EDE7D9';
+    ctx.lineWidth = 1;
+    for (let g = 1; g < 4; g++) {
+      ctx.beginPath(); ctx.moveTo(this.W * g / 4, 0); ctx.lineTo(this.W * g / 4, this.H);
+      ctx.moveTo(0, this.H * g / 4); ctx.lineTo(this.W, this.H * g / 4); ctx.stroke();
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(this.base, 0, 0);
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+
+    const st = this.state.stats;
+    if (st) {
+      const px = [this.toX(st.cx[0]), this.toX(st.cx[1])], py = [this.toY(st.cy[0]), this.toY(st.cy[1])];
+      if (this.props.showSpread !== false) {
+        ctx.save();
+        ctx.setLineDash([3, 4]);
+        for (let t = 0; t < 2; t++) {
+          ctx.strokeStyle = t ? CO.WCBS : CO.UKBMS;
+          ctx.globalAlpha = 0.75; ctx.lineWidth = 1.25;
+          ctx.beginPath(); ctx.arc(px[t], py[t], st.sp[t] * this.k, 0, 6.2832); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if (this.props.showCentroidLine !== false) {
+        ctx.save();
+        ctx.strokeStyle = '#17140F'; ctx.lineWidth = 1.25;
+        ctx.beginPath(); ctx.moveTo(px[0], py[0]); ctx.lineTo(px[1], py[1]); ctx.stroke();
+        const mx = (px[0] + px[1]) / 2, my = (py[0] + py[1]) / 2;
+        const label = 'Δ ' + st.dist.toFixed(2);
+        ctx.font = '500 11px "IBM Plex Mono", monospace';
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = panelColor();
+        ctx.fillRect(mx - tw / 2 - 5, my - 17, tw + 10, 15);
+        ctx.fillStyle = '#17140F';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, mx, my - 6);
+        ctx.restore();
+      }
+      for (let t = 0; t < 2; t++) {
+        const c = t ? CO.WCBS : CO.UKBMS;
+        ctx.save();
+        ctx.beginPath(); ctx.arc(px[t], py[t], 11, 0, 6.2832);
+        ctx.fillStyle = panelColor(); ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
+        ctx.lineWidth = 2; ctx.strokeStyle = c; ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(px[t] - 16, py[t]); ctx.lineTo(px[t] + 16, py[t]);
+        ctx.moveTo(px[t], py[t] - 16); ctx.lineTo(px[t], py[t] + 16);
+        ctx.lineWidth = 1.25; ctx.stroke();
+        ctx.beginPath(); ctx.arc(px[t], py[t], 3.2, 0, 6.2832); ctx.fillStyle = c; ctx.fill();
+        ctx.font = '600 11px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'left';
+        const lbl = t ? 'WCBS' : 'UKBMS';
+        const w2 = ctx.measureText(lbl).width;
+        ctx.fillStyle = panelColor();
+        ctx.fillRect(px[t] + 18, py[t] - 6, w2 + 8, 14);
+        ctx.fillStyle = c;
+        ctx.fillText(lbl, px[t] + 22, py[t] + 4);
+        ctx.restore();
+      }
+    }
+
+    if (this.drag && this.drag.active) {
+      const g = this.drag;
+      ctx.save();
+      ctx.fillStyle = 'rgba(23,20,15,0.05)';
+      ctx.fillRect(Math.min(g.x0, g.x1), Math.min(g.y0, g.y1), Math.abs(g.x1 - g.x0), Math.abs(g.y1 - g.y0));
+      ctx.strokeStyle = '#17140F'; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+      ctx.strokeRect(Math.min(g.x0, g.x1), Math.min(g.y0, g.y1), Math.abs(g.x1 - g.x0), Math.abs(g.y1 - g.y0));
+      ctx.restore();
+    } else if (this.state.sel) {
+      const s = this.state.sel;
+      ctx.save();
+      ctx.strokeStyle = '#17140F'; ctx.lineWidth = 1;
+      ctx.strokeRect(s.x0, s.y0, s.x1 - s.x0, s.y1 - s.y0);
+      ctx.restore();
+    }
+
+    const hi = this.state.pin >= 0 ? this.state.pin : this.state.hover;
+    if (hi >= 0) {
+      const d = this.d;
+      ctx.save();
+      ctx.beginPath(); ctx.arc(d.sx[hi], d.sy[hi], 8.5, 0, 6.2832);
+      ctx.strokeStyle = '#17140F'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.beginPath(); ctx.arc(d.sx[hi], d.sy[hi], 3.2, 0, 6.2832);
+      ctx.fillStyle = this.colorOf(hi); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  drawMap() {
+    const cv = this.mapRef.current;
+    if (!cv || !this.d) return;
+    const live = this.state.pin >= 0 ? this.state.pin : this.state.hover;
+    const i = live >= 0 ? live : (this.defaultIdx ?? 0);
+    if (i < 0) return;
+    const d = this.d, W = cv.width, H = cv.height, pad = 6;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+    const cosLat = Math.cos((d.minlat + d.maxlat) / 2 * Math.PI / 180);
+    const latSpan = d.maxlat - d.minlat, lonSpan = (d.maxlon - d.minlon) * cosLat;
+    const k = Math.min((W - pad * 2) / lonSpan, (H - pad * 2) / latSpan);
+    const ox = (W - lonSpan * k) / 2, oy = (H - latSpan * k) / 2;
+    const mx = lo => ox + (lo - d.minlon) * cosLat * k, my = la => H - oy - (la - d.minlat) * k;
+    ctx.fillStyle = 'rgba(23,20,15,0.20)';
+    for (let j = 0; j < d.n; j++) ctx.fillRect(mx(d.lon[j]), my(d.lat[j]), 1, 1);
+    const x = mx(d.lon[i]), y = my(d.lat[i]);
+    ctx.strokeStyle = d.type[i] ? CO.WCBS : CO.UKBMS;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, 6.2832); ctx.stroke();
+    ctx.fillStyle = d.type[i] ? CO.WCBS : CO.UKBMS;
+    ctx.beginPath(); ctx.arc(x, y, 1.8, 0, 6.2832); ctx.fill();
+  }
+
+  pick(mx, my) {
+    const d = this.d;
+    if (!d) return -1;
+    let best = -1, bd = 100;
+    for (let i = 0; i < d.n; i++) {
+      const dx = d.sx[i] - mx, dy = d.sy[i] - my;
+      const q = dx * dx + dy * dy;
+      if (q < bd) { bd = q; best = i; }
+    }
+    return best;
+  }
+
+  at(e) {
+    const r = this.wrapRef.current.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  onDown = e => {
+    if (!this.d) return;
+    const p = this.at(e);
+    this.drag = { x0: p.x, y0: p.y, x1: p.x, y1: p.y, active: false };
+  };
+
+  onMove = e => {
+    if (!this.d) return;
+    const p = this.at(e);
+    if (this.drag) {
+      this.drag.x1 = p.x; this.drag.y1 = p.y;
+      if (Math.abs(p.x - this.drag.x0) > 4 || Math.abs(p.y - this.drag.y0) > 4) this.drag.active = true;
+      this.paint();
+      return;
+    }
+    const i = this.pick(p.x, p.y);
+    if (i !== this.state.hover) this.setState({ hover: i });
+  };
+
+  onUp = e => {
+    if (!this.d || !this.drag) return;
+    const g = this.drag;
+    this.drag = null;
+    if (!g.active) {
+      const p = this.at(e);
+      const i = this.pick(p.x, p.y);
+      this.setState(s => ({ pin: s.pin === i ? -1 : i, hover: i }));
+      return;
+    }
+    const sel = { x0: Math.min(g.x0, g.x1), x1: Math.max(g.x0, g.x1), y0: Math.min(g.y0, g.y1), y1: Math.max(g.y0, g.y1) };
+    let u = 0, w = 0;
+    const d = this.d;
+    for (let i = 0; i < d.n; i++) {
+      if (d.sx[i] >= sel.x0 && d.sx[i] <= sel.x1 && d.sy[i] >= sel.y0 && d.sy[i] <= sel.y1) {
+        if (d.type[i]) w++; else u++;
+      }
+    }
+    sel.u = u; sel.w = w;
+    this.setState({ sel: u + w ? sel : null });
+  };
+
+  winUp = () => { if (this.drag) { this.drag = null; this.paint(); } };
+  onLeave = () => { if (!this.drag) this.setState({ hover: -1 }); };
+
+  renderVals() {
+    const st = this.state.stats, s = this.state.sel, d = this.d;
+    const live = this.state.pin >= 0 ? this.state.pin : this.state.hover;
+    const isDefault = live < 0;
+    const i = live >= 0 ? live : (d ? (this.defaultIdx ?? 0) : -1);
+    const has = !!(d && i >= 0);
+    const nU = st ? st.cn[0] : 0, nW = st ? st.cn[1] : 0;
+    const pctAll = st ? (nU / st.n * 100) : 0;
+    const selPct = s && (s.u + s.w) ? s.u / (s.u + s.w) * 100 : 0;
+    const btn = on => 'font: inherit; font-family: \'IBM Plex Mono\', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 14px; border: none; cursor: pointer; background: ' + (on ? '#17140F' : 'transparent') + '; color: ' + (on ? '#F4F1E9' : '#17140F');
+    const country = this.state.mode === 'country' && st;
+    return {
+      loading: this.state.loading,
+      n: st ? st.n.toLocaleString() : '2,900',
+      nOther: st ? (st.n - 1).toLocaleString() : '',
+      nUkbms: nU ? nU.toLocaleString() : '',
+      nWcbs: nW ? nW.toLocaleString() : '',
+      ratio: st ? st.ratio.toFixed(2) : '—',
+      centDist: st ? st.dist.toFixed(2) : '—',
+      spreadU: st ? st.sp[0].toFixed(2) : '—',
+      spreadW: st ? st.sp[1].toFixed(2) : '—',
+      spreadAvg: st ? st.spAvg.toFixed(2) : '—',
+      canvasRef: this.canvasRef, wrapRef: this.wrapRef, mapRef: this.mapRef,
+      onMove: this.onMove, onLeave: this.onLeave, onDown: this.onDown, onUp: this.onUp,
+      modeSurvey: () => this.setState({ mode: 'survey' }),
+      modeCountry: () => this.setState({ mode: 'country' }),
+      btnSurvey: btn(this.state.mode !== 'country'),
+      btnCountry: btn(this.state.mode === 'country'),
+      showCountryKey: !!country,
+      countryKey: country ? Object.keys(st.byCountry).sort((a, b) => st.byCountry[b] - st.byCountry[a])
+        .map(c => ({ label: c, n: st.byCountry[c].toLocaleString(), color: COUNTRY_COLORS[c] || COUNTRY_COLORS.Other })) : [],
+      hasDetail: has, noDetail: !has,
+      detailHeading: !has ? 'Site detail'
+        : this.state.pin >= 0 ? 'Pinned site — click again to release'
+        : this.state.hover >= 0 ? 'Site under the cursor'
+        : 'Example site — hover any point to explore',
+      d: has ? {
+        name: d.name[i] || d.grid[i] || 'Unnamed site',
+        grid: d.grid[i] || 'no grid reference',
+        country: d.country[i],
+        type: d.type[i] ? 'WCBS · random square' : 'UKBMS · chosen transect',
+        color: d.type[i] ? CO.WCBS : CO.UKBMS,
+        span: d.first[i] + '–' + d.last[i],
+        nyrs: d.nyrs[i] + (d.nyrs[i] === 1 ? ' season' : ' seasons'),
+        coord: d.lat[i].toFixed(3) + '°N, ' + Math.abs(d.lon[i]).toFixed(3) + '°' + (d.lon[i] < 0 ? 'W' : 'E'),
+      } : null,
+      hasSel: !!s,
+      selTotal: s ? (s.u + s.w).toLocaleString() : '',
+      selU: s ? s.u : '', selW: s ? s.w : '',
+      selPct: s ? selPct.toFixed(1) + '%' : '',
+      selBar: s ? selPct.toFixed(1) + '%' : '0%',
+      selDelta: s ? (selPct - pctAll >= 0 ? '+' : '−') + Math.abs(selPct - pctAll).toFixed(1) + ' pts' : '',
+      pctAll: pctAll ? pctAll.toFixed(1) + '%' : '69.0%',
+      clearSel: () => this.setState({ sel: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>
