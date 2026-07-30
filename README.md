@@ -6,6 +6,7 @@ network — 2,921 sites, each represented by a 128-dimensional embedding
 sampled at its location for 2022.
 
 **Live interactive figure:** https://s19835.github.io/tessera-embeddings-habitat/
+**Plain-language version (no ML/satellite background needed):** https://s19835.github.io/tessera-embeddings-habitat/story.html
 
 ## The question, and why it's asked this way
 
@@ -62,6 +63,9 @@ space. The 2D picture is illustrative, not the actual test.
   plus the fitted UMAP reducer and classifier saved from `umap.ipynb`.
 - `outputs/figures/habitat_embedding_map.html` — the interactive figure,
   also published via GitHub Pages (`docs/`) at the link above.
+- `outputs/figures/story.html` — plain-language public companion page (same
+  finding, no ML/satellite background assumed), also published via
+  GitHub Pages (`docs/story.html`).
 
 ## Key lessons encoded in this codebase
 
