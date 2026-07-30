@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can a satellite find butterfly habitat without ever seeing a butterfly?</title>
+<meta name="description" content="An AI never saw a butterfly. It only learned landscape patterns from satellite images. Can it still tell good habitat from random land?">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#FFFFFF; --panel:#FAFAF8; --ink:#17140F; --sub:#5A5346; --faint:#8A8171;
+         --line:#E4DDCB; --ukbms:#0072B2; --wcbs:#D55E00; }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:Newsreader, Georgia, serif;
+    -webkit-font-smoothing:antialiased;}
+  .mono{font-family:'IBM Plex Mono', monospace; letter-spacing:.14em; text-transform:uppercase;}
+  section{max-width:760px; margin:0 auto; padding:80px 32px;}
+  h1{font-size:clamp(32px,5.4vw,54px); line-height:1.08; font-weight:400; letter-spacing:-0.01em; margin:0 0 20px;}
+  h2{font-size:clamp(24px,3.6vw,32px); font-weight:400; margin:0 0 18px;}
+  p{font-size:18px; line-height:1.55; margin:0 0 16px; max-width:62ch; color:var(--ink);}
+  .lead{font-size:20px; color:var(--sub);}
+  .reveal{opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+  svg.ic{stroke:var(--ink); fill:none; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;}
+
+  /* HERO */
+  .hero{min-height:92vh; display:flex; flex-direction:column; justify-content:center; align-items:center;
+    text-align:center; padding:60px 28px; position:relative; overflow:hidden; border-bottom:1px solid var(--ink);}
+  .hero .tag{margin-bottom:26px; color:var(--faint); font-size:11px;}
+  .hero h1{max-width:780px;}
+  .hero .sub{max-width:540px; font-size:19px; color:var(--sub); margin-top:16px;}
+  .sat{position:absolute; top:14%; left:-6%; animation:drift 46s linear infinite;}
+  @keyframes drift{ from{ transform: translateX(0);} to{ transform: translateX(112vw);} }
+  .scrollcue{margin-top:52px; font-size:12px; color:var(--faint);}
+
+  /* comic flow */
+  .flow{display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin:34px 0 8px;}
+  .flow .card{border:1px solid var(--line); padding:24px 20px; width:150px; text-align:center;}
+  .flow .card .ic-wrap{margin-bottom:12px; display:flex; justify-content:center;}
+  .flow .card .lb{font-size:14px; color:var(--sub); line-height:1.35;}
+  .flow .arrow{font-family:'IBM Plex Mono',monospace; font-size:16px; color:var(--faint);}
+
+  /* fingerprint */
+  .fp-wrap{display:flex; gap:26px; align-items:center; flex-wrap:wrap; justify-content:center; margin:26px 0;}
+  .fp-box{border:1px solid var(--line); padding:22px; width:230px; text-align:center;}
+  .fp-icons{display:flex; justify-content:center; gap:10px; margin-top:6px;}
+  .fp-grid{display:grid; grid-template-columns:repeat(8,1fr); gap:3px; margin-top:6px;}
+  .fp-grid div{height:7px; background:#D8CFB8;}
+  .fp-grid div:nth-child(5n){background:var(--ukbms);}
+  .fp-grid div:nth-child(7n){background:var(--wcbs);}
+  .fp-arrow{font-family:'IBM Plex Mono',monospace; color:var(--faint); font-size:16px;}
+  .caption{font-size:15px; color:var(--sub); max-width:52ch; margin:22px auto 0; text-align:center;}
+
+  /* quiz */
+  .quiz{display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin:26px 0;}
+  .land{width:280px; height:170px; border:1px solid var(--ink); cursor:pointer; position:relative;
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:14px; transition:background .15s ease;}
+  .land svg{position:absolute; top:14px; left:14px;}
+  .land.picked{background:var(--panel);}
+  .land .lab{background:var(--paper); border:1px solid var(--line); padding:5px 12px; font-size:12px;
+    font-family:'IBM Plex Mono',monospace; letter-spacing:.1em; text-transform:uppercase;}
+  .quiz-result{text-align:center; min-height:60px; margin-top:16px; font-size:16px; color:var(--sub);}
+  .quiz-result b{color:var(--ink); font-weight:600;}
+
+  /* impact grid */
+  .grid-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px; background:var(--line);
+    border:1px solid var(--line); margin-top:24px;}
+  .gcard{background:var(--paper); padding:22px 14px; text-align:center; opacity:0; transform:translateY(10px);
+    transition:opacity .5s ease, transform .5s ease;}
+  .gcard.in{opacity:1; transform:translateY(0);}
+  .gcard .ic-wrap{display:flex; justify-content:center; margin-bottom:10px;}
+  .gcard .lb{font-size:13px; color:var(--sub); font-family:'IBM Plex Mono',monospace; letter-spacing:.04em;}
+
+  /* results band */
+  .band{background:var(--ink); color:#F4F1E9; border-top:1px solid var(--ink); border-bottom:1px solid var(--ink);}
+  .band h2{color:#fff;}
+  .band p{color:#D8CFB8;}
+  .stats{display:flex; gap:0; flex-wrap:wrap; margin-top:22px; border-top:1px solid #3C362C;}
+  .stat{min-width:150px; padding:18px 0 0; border-right:1px solid #3C362C; padding-right:24px; margin-right:24px;}
+  .stat .n{font-size:36px; font-weight:500; font-family:'IBM Plex Mono',monospace;}
+  .stat .l{font-size:12px; color:#A79E8B; margin-top:6px; max-width:16ch;}
+  .band a.cta{margin-top:28px;}
+
+  /* how it works steps */
+  .steps{margin-top:6px;}
+  .step{display:flex; gap:20px; padding:20px 0; border-top:1px solid var(--line);}
+  .step:last-child{border-bottom:1px solid var(--line);}
+  .step .n{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--faint); flex-shrink:0; width:28px;}
+  .step p{margin:0; font-size:16px;}
+  .step .t{font-weight:600; display:block; margin-bottom:2px;}
+
+  footer{text-align:center; max-width:760px; margin:0 auto; padding:56px 32px 64px; border-top:1px solid var(--line); font-size:14px; color:var(--faint);}
+  footer a{color:var(--ink);}
+  footer .cite{margin:28px auto 0; max-width:58ch; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.7; color:var(--faint); letter-spacing:.02em; text-transform:none;}
+  footer .cite a{color:#0B5D8A;}
+  .cta{display:inline-block; margin-top:24px; padding:11px 24px; border:1px solid currentColor;
+    text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink);}
+  .cta:hover{background:var(--ink); color:#fff;}
+  .band .cta{color:#F4F1E9;}
+  .band .cta:hover{background:#fff; color:var(--ink);}
+  @media (max-width:640px){ section{padding:60px 22px;} .flow .arrow{transform:rotate(90deg);} }
+
+  .bf{display:inline-block; vertical-align:-6px; flex-shrink:0; fill:var(--ink); opacity:.88;}
+  .bf-blue{fill:var(--ukbms);}
+  .bf-orange{fill:var(--wcbs);}
+  .bf-yellow{fill:#E5B93A;}
+  h2 .bf{margin-right:10px;}
+  .float-bf{position:absolute; animation:flutter 7s ease-in-out infinite;}
+  @keyframes flutter{ 0%,100%{ transform:translate(0,0) rotate(0deg);} 50%{ transform:translate(-6px,-14px) rotate(-6deg);} }
+  .inline-bf{margin:0 3px;}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="butterfly" viewBox="0 0 32 24">
+    <path class="wing" d="M16 12c-2-8-9-11-13-8-3 2-2 8 3 10 4 2 8 1 10-2z"/>
+    <path class="wing" d="M16 12c2-8 9-11 13-8 3 2 2 8-3 10-4 2-8 1-10-2z"/>
+    <path class="wing" d="M16 12c-1 6-6 8-9 6-2-1.5-1-5 2-6.5 3-1.5 6-1 7 .5z" opacity="0.75"/>
+    <path class="wing" d="M16 12c1 6 6 8 9 6 2-1.5 1-5-2-6.5-3-1.5-6-1-7 .5z" opacity="0.75"/>
+    <rect x="15.3" y="4" width="1.4" height="16" rx="0.7" fill="#17140F"/>
+  </symbol>
+</svg>
+
+<section class="hero">
+  <svg class="sat ic" width="34" height="34" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><line x1="9" y1="12" x2="4" y2="12"/><line x1="15" y1="12" x2="20" y2="12"/><line x1="6" y1="6" x2="3" y2="3"/><line x1="18" y1="6" x2="21" y2="3"/><path d="M3 3 L6 6 M21 3 L18 6"/></svg>
+  <svg class="bf bf-orange float-bf" width="46" height="34" style="top:18%; left:10%; animation-delay:0s"><use href="#butterfly"/></svg>
+  <svg class="bf bf-blue float-bf" width="30" height="22" style="top:60%; right:9%; animation-delay:1.6s"><use href="#butterfly"/></svg>
+  <svg class="bf bf-yellow float-bf" width="16" height="12" style="bottom:18%; left:22%; animation-delay:3.2s"><use href="#butterfly"/></svg>
+  <svg class="bf bf-blue float-bf" width="12" height="9" style="top:30%; right:20%; animation-delay:2.1s"><use href="#butterfly"/></svg>
+  <span class="tag mono">TESSERA × UK Butterfly Monitoring Scheme</span>
+  <h1>Can a satellite find butterfly habitat<br>without ever seeing a butterfly?</h1>
+  <p class="sub">An AI looked at satellite images of the UK. It has never seen a butterfly,
+  never read an ecology textbook — it only knows patterns of light bouncing off the land.
+  Can it still tell where butterflies are likely to thrive?</p>
+  <div class="scrollcue mono">Scroll — yes, and here's how</div>
+</section>
+
+<section class="reveal">
+  <h2><svg class="bf bf-blue" width="22" height="16"><use href="#butterfly"/></svg>The idea, in four steps</h2>
+  <div class="flow">
+    <div class="card">
+      <div class="ic-wrap"><svg class="ic" width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div>
+      <span class="lb">Satellite photographs the landscape</span>
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="card">
+      <div class="ic-wrap"><svg class="ic" width="30" height="30" viewBox="0 0 24 24"><path d="M9 4a4 4 0 0 0-4 4 3 3 0 0 0-1 5.6A3.5 3.5 0 0 0 7 19h9a3.5 3.5 0 0 0 1-6.86A4 4 0 0 0 13 5a4 4 0 0 0-4-1z"/></svg></div>
+      <span class="lb">AI learns landscape patterns</span>
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="card">
+      <div class="ic-wrap"><svg class="ic" width="30" height="30" viewBox="0 0 24 24"><path d="M12 8c0-3 2-5 5-5 1 2 0 5-2 6M12 8c0-3-2-5-5-5-1 2 0 5 2 6M12 8v11M8 12c-2-1-4 0-4 2s2 2 4 1M16 12c2-1 4 0 4 2s-2 2-4 1"/></svg></div>
+      <span class="lb">Predicts butterfly habitat</span>
+    </div>
+  </div>
+  <p style="text-align:center; margin:16px auto 0">No butterfly ever enters the training data. Only pixels of land.</p>
+</section>
+
+<section class="reveal">
+  <h2><svg class="bf bf-orange" width="22" height="16"><use href="#butterfly"/></svg>What does the AI actually remember?</h2>
+  <p>Not the photo itself — a <em>fingerprint</em> of it. The same way facial recognition doesn't
+  store every pixel of your face, it stores the pattern of features that make your face yours.</p>
+  <div class="fp-wrap">
+    <div class="fp-box">
+      <div class="mono" style="font-size:11px;color:var(--faint)">satellite photo</div>
+      <div class="fp-icons">
+        <svg class="ic" width="22" height="22" viewBox="0 0 24 24"><path d="M12 3c-3 3-3 15 0 18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>
+        <svg class="ic" width="22" height="22" viewBox="0 0 24 24"><path d="M3 17l6-8 4 5 3-4 5 7"/></svg>
+        <svg class="ic" width="22" height="22" viewBox="0 0 24 24"><path d="M9 4a4 4 0 0 0-4 4 3 3 0 0 0-1 5.6A3.5 3.5 0 0 0 7 19h9a3.5 3.5 0 0 0 1-6.86A4 4 0 0 0 13 5a4 4 0 0 0-4-1z"/></svg>
+      </div>
+    </div>
+    <div class="fp-arrow">&rarr;</div>
+    <div class="fp-box">
+      <div class="mono" style="font-size:11px;color:var(--faint)">landscape fingerprint</div>
+      <div class="fp-grid">
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+    </div>
+  </div>
+  <p class="caption">This fingerprint — called an <b>embedding</b> — is 128 numbers per location.
+  It doesn't say "tree" or "field." It just says: this patch of land looks like <i>this</i>,
+  not like <i>that</i>.</p>
+</section>
+
+<section class="reveal">
+  <h2><svg class="bf bf-yellow" width="22" height="16"><use href="#butterfly"/></svg>Try it yourself</h2>
+  <p>Two 1&nbsp;km squares of British countryside. One is a spot volunteers chose because they knew
+  butterflies would be there. The other was picked completely at random. Pick the one you think is
+  the <b>known good habitat</b>.</p>
+  <div class="quiz">
+    <div class="land" data-ans="habitat" onclick="pick(this,'habitat')">
+      <svg class="ic" width="26" height="26" viewBox="0 0 24 24" style="stroke:var(--ukbms)"><path d="M9 4a4 4 0 0 0-4 4 3 3 0 0 0-1 5.6A3.5 3.5 0 0 0 7 19h9a3.5 3.5 0 0 0 1-6.86A4 4 0 0 0 13 5a4 4 0 0 0-4-1z"/></svg>
+      <span class="lab">Square A</span>
+    </div>
+    <div class="land" data-ans="random" onclick="pick(this,'random')">
+      <svg class="ic" width="26" height="26" viewBox="0 0 24 24" style="stroke:var(--wcbs)"><rect x="4" y="4" width="16" height="16"/></svg>
+      <span class="lab">Square B</span>
+    </div>
+  </div>
+  <div class="quiz-result mono" id="qr" style="text-transform:none; letter-spacing:normal; font-family:Newsreader, Georgia, serif;"></div>
+</section>
+
+<section class="reveal">
+  <h2><svg class="bf bf-orange" width="22" height="16"><use href="#butterfly"/></svg>What the AI actually learned</h2>
+  <p>Not butterflies. <b>Landscapes.</b> Somewhere in those 128 numbers, it discovered structure like:</p>
+  <div class="grid-cards">
+    <div class="gcard in">
+      <div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><path d="M9 4a4 4 0 0 0-4 4 3 3 0 0 0-1 5.6A3.5 3.5 0 0 0 7 19h9a3.5 3.5 0 0 0 1-6.86A4 4 0 0 0 13 5a4 4 0 0 0-4-1z"/></svg></div>
+      <span class="lb">Woodland edges</span>
+    </div>
+    <div class="gcard in">
+      <div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><path d="M3 19c2-6 4-6 5-12 1 6 3 6 5 12M11 19c2-7 4-7 5-14 1 7 3 7 5 14"/></svg></div>
+      <span class="lb">Mixed grassland</span>
+    </div>
+    <div class="gcard in">
+      <div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3M6.3 6.3l2 2M15.7 15.7l2 2M17.7 6.3l-2 2M8.3 15.7l-2 2"/></svg></div>
+      <span class="lb">Flower-rich margins</span>
+    </div>
+    <div class="gcard in">
+      <div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><path d="M12 3c3 4 6 8 6 11a6 6 0 0 1-12 0c0-3 3-7 6-11z"/></svg></div>
+      <span class="lb">Damp, sheltered ground</span>
+    </div>
+  </div>
+  <p style="margin-top:26px">These happen to be exactly the places butterflies love. Nobody told the AI that —
+  it found the pattern on its own, from the shape of the land alone.</p>
+</section>
+
+<section class="band reveal" style="position:relative">
+  <svg class="bf bf-yellow" width="36" height="27" style="position:absolute; top:36px; right:32px; opacity:.7"><use href="#butterfly"/></svg>
+  <h2><svg class="bf bf-blue" width="22" height="16"><use href="#butterfly"/></svg>The proof</h2>
+  <p>2,921 real UK survey sites. Half chosen by volunteers for known good habitat,
+  half dropped at random. A simple classifier was shown only the satellite fingerprint of each site —
+  no map, no coordinates — and asked to guess which kind it was looking at.</p>
+  <div class="stats">
+    <div class="stat"><div class="n">76%</div><div class="l">correct, from fingerprint alone</div></div>
+    <div class="stat"><div class="n">69%</div><div class="l">correct by guessing the same answer every time</div></div>
+    <div class="stat"><div class="n">p&nbsp;=&nbsp;0.0099</div><div class="l">chance this is a fluke</div></div>
+  </div>
+  <p style="margin-top:24px">And it isn't just memorizing where each site sits on the map —
+  a version given <i>only</i> latitude and longitude scored no better than the flat guess.
+  It's reading the land, not the location.</p>
+  <a class="cta" href="habitat_embedding_map.html">Explore the full data &rarr;</a>
+</section>
+
+<section class="reveal">
+  <h2><svg class="bf bf-yellow" width="22" height="16"><use href="#butterfly"/></svg>How it works, briefly</h2>
+  <svg class="bf bf-blue inline-bf" width="16" height="12"><use href="#butterfly"/></svg>
+  <svg class="bf bf-orange inline-bf" width="12" height="9"><use href="#butterfly"/></svg>
+  <svg class="bf bf-yellow inline-bf" width="20" height="15"><use href="#butterfly"/></svg>
+  <div class="steps">
+    <div class="step"><span class="n mono">01</span><p><span class="t">Sample.</span> For each survey site, pull the satellite embedding
+    TESSERA already computed for that patch of land in 2022 — 128 numbers.</p></div>
+    <div class="step"><span class="n mono">02</span><p><span class="t">Label.</span> Mark each site as volunteer-chosen habitat or
+    random square — the only "answer key" the model gets.</p></div>
+    <div class="step"><span class="n mono">03</span><p><span class="t">Classify.</span> Train a simple model to guess the label from the
+    128 numbers alone, tested on sites it never saw during training.</p></div>
+    <div class="step"><span class="n mono">04</span><p><span class="t">Rule out shortcuts.</span> Check a location-only model can't do
+    the same job — if it could, the AI would just be memorizing geography, not reading landscape.</p></div>
+  </div>
+</section>
+
+<section class="reveal">
+  <h2><svg class="bf bf-blue" width="22" height="16"><use href="#butterfly"/></svg>What else could this find?</h2>
+  <p>Once an AI can tell good habitat from random land using nothing but a satellite fingerprint,
+  the same trick isn't limited to butterflies.</p>
+  <div class="grid-cards" id="impact">
+    <div class="gcard"><div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><path d="M9 4a4 4 0 0 0-4 4 3 3 0 0 0-1 5.6A3.5 3.5 0 0 0 7 19h9a3.5 3.5 0 0 0 1-6.86A4 4 0 0 0 13 5a4 4 0 0 0-4-1z"/></svg></div><span class="lb">Forest health</span></div>
+    <div class="gcard"><div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><path d="M3 17c2-2 3-2 5 0s3 2 5 0 3-2 5 0M3 12c2-2 3-2 5 0s3 2 5 0 3-2 5 0"/></svg></div><span class="lb">Wetlands</span></div>
+    <div class="gcard"><div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><path d="M4 14c4-8 12-8 16 0M8 14v5M16 14v5M4 19h16"/></svg></div><span class="lb">Wildlife corridors</span></div>
+    <div class="gcard"><div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><path d="M3 19c2-6 4-6 5-12 1 6 3 6 5 12M11 19c2-7 4-7 5-14 1 7 3 7 5 14"/></svg></div><span class="lb">Crop stress</span></div>
+    <div class="gcard"><div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><path d="M12 3c1 3-2 4-2 7a3 3 0 1 0 6 0c0-1-1-2-2-2 1 3-1 4-1 6"/></svg></div><span class="lb">Wildfire risk</span></div>
+    <div class="gcard"><div class="ic-wrap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div><span class="lb">Biodiversity, broadly</span></div>
+  </div>
+</section>
+
+<footer class="reveal">
+  <div style="margin-bottom:10px">
+    <svg class="bf bf-orange" width="14" height="10" style="margin:0 4px"><use href="#butterfly"/></svg>
+    <svg class="bf bf-blue" width="20" height="15" style="margin:0 4px"><use href="#butterfly"/></svg>
+    <svg class="bf bf-yellow" width="14" height="10" style="margin:0 4px"><use href="#butterfly"/></svg>
+  </div>
+  <p style="margin:0 0 12px">This page is a plain-language companion to the full research write-up.</p>
+  <a href="habitat_embedding_map.html">Full interactive figure &rarr;</a> &nbsp;&middot;&nbsp;
+  <a href="https://github.com/S19835/tessera-embeddings-habitat">Source code &rarr;</a>
+  <p class="cite">Botham, M.S.; Middlebrook, I.; Heywood, J.; Harrower, C.; Conway, R.; Roy, D.B. (2023).
+  <i>United Kingdom Butterfly Monitoring Scheme: site location data 2022.</i>
+  NERC EDS Environmental Information Data Centre.
+  <a href="https://doi.org/10.5285/226979d4-6d81-4f5b-9bb7-4a430caa7f51">doi:10.5285/226979d4-6d81-4f5b-9bb7-4a430caa7f51</a>
+  &middot; Open Government Licence. Embeddings: TESSERA &middot; Projection: UMAP, 2 components.</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); }),
+    {threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  document.querySelectorAll('#impact .gcard').forEach((el,i) => {
+    const obs = new IntersectionObserver(es => es.forEach(e => {
+      if(e.isIntersecting) setTimeout(()=>el.classList.add('in'), i*80);
+    }), {threshold:.3});
+    obs.observe(el);
+  });
+
+  function pick(el, ans){
+    document.querySelectorAll('.land').forEach(l=>l.classList.remove('picked'));
+    el.classList.add('picked');
+    const correct = ans === 'habitat';
+    document.getElementById('qr').innerHTML = correct
+      ? "Square A was the volunteer-chosen site. <b>You got it — but the AI didn't get to look, it only had the fingerprint.</b>"
+      : "Actually Square A was the volunteer-chosen habitat. <b>Easy to miss by eye — which is exactly why a 128-number fingerprint helps.</b>";
+  }
+</script>
+
+</body>
+</html>
